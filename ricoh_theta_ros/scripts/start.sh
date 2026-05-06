@@ -58,8 +58,8 @@ esac
 # put it in background to avoid blocking
 gst_loopback --format 2K &
 
-# launch cv_camera_node
-roslaunch ricoh_theta_ros start.launch device_id:=2
+# launch usb_cam node via ros2 launch
+ros2 launch ricoh_theta_ros start.launch.py device_id:=2
 
 # Killing the parent process does not kill the background child processes (e.g.
 # gst_loopback in this case), hence we use the bash built-in `trap` to kill all

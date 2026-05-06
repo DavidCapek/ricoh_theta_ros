@@ -1,6 +1,6 @@
 # ricoh_theta_ros
 
-The ROS package for RICOH THETA V and Z1 cameras.
+The ROS 2 package for RICOH THETA V and Z1 cameras.
 
 ## Prerequisites
 
@@ -28,23 +28,20 @@ if you are interested in more details.
 
 ## Installation
 
-Make sure the following ROS packages have been installed:
+Make sure the following ROS 2 packages have been installed:
 
 - `camera_info_manager`
-- `catkin`
+- `ament_cmake`
 - `cv_bridge`
 - `image_transport`
-- `nodelet`
-- `roscpp`
-- `roslint`
-- `rostest`
+- `rclcpp`
 - `sensor_msgs`
-- `cv_camera`
+- `usb_cam`
 
 Navigate into your ROS workspace directory and run:
 
 ```sh
-git -C src clone --recursive https://github.com/madjxatw/ricoh_theta_ros.git
+git -C src clone --recursive https://github.com/DavidCapek/ricoh_theta_ros.git
 ```
 
 Install any dependencies in the `deps` directory if it is not yet installed.
@@ -54,35 +51,76 @@ them.
 Run
 
 ```sh
-catkin_make
+colcon build --packages-select ricoh_theta_ros equirec2perspec
 ```
 
 to build the workspace.
 
 ## Usage
 
-Once the build is done successfully, source the workspace setup script depending
-on your shell type, e.g. `</path/to/your/ros/workspace>/devel/setup.bash` for
-bash.
+Once the build is done successfully, source the workspace setup script:
+
+```sh
+source </path/to/your/ros/workspace>/install/setup.bash
+```
+
+### Quick start
+
+The `start.sh` script automates camera wake-up, live streaming setup, and node launch.
+Before running it, ensure the following are satisfied:
+
+- The `v4l2loopback` kernel module is loaded (`lsmod | grep v4l2loopback`).
+- `gst_loopback` is on your `PATH` (from `libuvc-theta-sample`).
+- `ptpcam` is on your `PATH` (from `libptp`).
+- Optional: the `ricoh` wrapper script is on your `PATH` (copy from `ricoh_theta_ros/utils/ricoh` to `~/.local/bin` or `/usr/local/bin`).
 
 Run the startup script:
 
 ```sh
-rosrun ricoh_theta_ros start.sh
+ros2 run ricoh_theta_ros start.sh
 ```
 
 The `start.sh` script performs:
 
 - Starting all the stuff required to capture the live streaming data from the
   camera.
-- Running a launch file that starts `cv_camera` node and remaps the `image_raw`,
-  `camera_info` and `set_camera_info` topics from `cv_camera` namespace to
-  `360cam` namespace.
-- Setting up resolution. RICOTH THETA V and Z1 support live streaming in either 4K
-  (3840x1920) or 2K (1920x960) resolution, `start.sh` sets resolution to 2K to
+- Running a launch file that starts the `usb_cam` node and remaps the `image_raw`
+  and `camera_info` topics to the `360cam` namespace.
+- Setting up resolution. RICOH THETA V and Z1 support live streaming in either 4K
+  (3840x1920) or 2K (1920x960) resolution; `start.sh` sets resolution to 2K to
   reduce latency.
 
 Write your own launch files or startup scripts if the default is not satisfying.
+
+### Manual launch
+
+If you prefer to launch manually instead of using `start.sh`:
+
+```sh
+# 1. Ensure v4l2loopback is loaded
+sudo modprobe v4l2loopback video_nr=2
+
+# 2. Start the GStreamer loopback (in a separate terminal)
+gst_loopback --format 2K
+
+# 3. Launch the camera node (in another terminal)
+source </path/to/your/ros/workspace>/install/setup.bash
+ros2 launch ricoh_theta_ros start.launch.py device_id:=2
+```
+
+### Equirectangular-to-perspective conversion node
+
+To run the perspective conversion node alongside the camera:
+
+```sh
+ros2 launch equirec2perspec equirec2perspec.launch.py
+```
+
+You can override parameters on the command line, e.g.:
+
+```sh
+ros2 launch equirec2perspec equirec2perspec.launch.py fov:=120.0 theta:=45.0 width:=1280 height:=720
+```
 
 ## Camera control
 
@@ -116,21 +154,31 @@ To use the equirec2perspec package:
 
 - add `equirec2perspec` as `<build_depend>` and `<exec_depend>` in the
   `package.xml` of your own package.
-- Append `equirec2perspec` to `find_package(catkin)` in your `CMakeLists.txt`
-  file:
+- In your `CMakeLists.txt`, call `find_package(equirec2perspec REQUIRED)` and
+  link against `${equirec2perspec_LIBRARIES}`:
 
   ```cmake
-  find_package(CATKIN REQUIRED COMPONENTS equirec2perspec)
+  find_package(equirec2perspec REQUIRED)
+  target_link_libraries(your_target ${equirec2perspec_LIBRARIES})
   ```
 
-then you can reference its header files and libraries using
-`CATKIN_INCLUDE_DIRS` and `CATKIN_LIBRARIES` respectively.
+then you can reference its header files using the installed include path.
 
 Include the header file as below:
 
 ```c++
 #include "equirec2perspec/equirec2perspec.h"
 ```
+
+A standalone ROS 2 node `equirec2perspec_node` is also provided. Launch it with:
+
+```sh
+ros2 launch equirec2perspec equirec2perspec.launch.py
+```
+
+Parameters (`fov`, `theta`, `phi`, `height`, `width`) can be set via launch or
+command line. The node subscribes to `input/equirectangular` and publishes
+`output/perspective` (`sensor_msgs/Image`).
 
 See the [documentation](#documentation) for more about it.
 

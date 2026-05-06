@@ -216,16 +216,15 @@ system boot. This can be done as follows:
    echo 'options v4l2loopback video_nr=2' | sudo /etc/modprobe.d/v4l2loopback.conf
 
 
-cv_camera
----------
+usb_cam
+-------
 
-Once the system-level driver installation completes, a ROS-level driver is also
-required. The cv_camera_ ROS package has been verified to work with RICOH THETA
-cameras without extra tweak.
+Once the system-level driver installation completes, a ROS 2-level driver is also
+required. The usb_cam_ ROS 2 package is the standard V4L2 camera driver for ROS 2.
 
-Install cv_camera:
+Install usb_cam:
 
 .. code-block:: sh
 
    sudo apt update
-   sudo apt install ros-${ROS_DISTRO}-cv-camera
+   sudo apt install ros-${ROS_DISTRO}-usb-cam

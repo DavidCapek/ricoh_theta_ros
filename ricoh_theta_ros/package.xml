@@ -1,15 +1,19 @@
 <?xml version="1.0"?>
-<package format="2">
+<package format="3">
   <name>ricoh_theta_ros</name>
   <version>0.0.1</version>
   <description>
-      ROS driver for RICOH THETA V/Z1 camera
+      ROS 2 driver for RICOH THETA V/Z1 camera
   </description>
   <maintainer email="xmj@sjtu.edu.cn">Minjie Xu</maintainer>
   <author email="xmj@sjtu.edu.cn">Minjie Xu</author>
   <license>TODO</license>
-  <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>cv_camera</exec_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>usb_cam</exec_depend>
+  <exec_depend>equirec2perspec</exec_depend>
   <doc_depend>python3-sphinx</doc_depend>
   <doc_depend>python3-sphinx-rtd-theme</doc_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>

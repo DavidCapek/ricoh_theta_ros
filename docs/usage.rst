@@ -11,11 +11,11 @@ Build ricoh_theta_ros:
    # Replace </path/to/your/ros/workspace> with the exact path of the ROS
    # workspace on your system.
    cd </path/to/your/ros/workspace>
-   git -C src clone --recursive https://github.com/madjxatw/ricoh_theta_ros.git
+   git -C src clone --recursive https://github.com/DavidCapek/ricoh_theta_ros.git
    # Build and install all deps
 
    # build ricoh_theta_ros
-   catkin_make
+   colcon build --packages-select ricoh_theta_ros equirec2perspec
 
 Run:
 
@@ -23,9 +23,8 @@ Run:
 
    # Replace </path/to/your/ros/workspace> with the exact path of the ROS
    # workspace on your system.
-   # Assuming a roscore process is running.
-   source </path/to/your/ros/workspace>/devel/setup.bash
-   rosrun ricoh_theta_ros start.sh
+   source </path/to/your/ros/workspace>/install/setup.bash
+   ros2 run ricoh_theta_ros start.sh
 
 Startup Script
 --------------
@@ -33,10 +32,10 @@ Startup Script
 The :file:`start.sh` file is a startup script that:
 
 - checks whether the ``v4l2loopback`` kernel module has been loaded to make sure
-  that a virtual v4l2 looopback device is available.
+  that a virtual v4l2 loopback device is available.
 - wakes the camera up and set it to live streaming mode.
 - runs ``gst_loopback`` in background.
-- runs ``roslaunch`` to load the specified launch file with appropriate
+- runs ``ros2 launch`` to load the specified launch file with appropriate
   parameters.
 
 You can take it as an example, and develop your own launch files or startup
@@ -60,9 +59,9 @@ Instead of using the launch script, you can start all involved stuff manually:
 
    .. code-block:: sh
 
-      source </path/to/your/ros/workspace>/devel/setup.bash
+      source </path/to/your/ros/workspace>/install/setup.bash
       # device_id here must be as same as supplied to v4l2loopback module
-      roslaunch </path/to/your/ros/workspace>/src/scripts/start.sh device_id:=2
+      ros2 launch ricoh_theta_ros start.launch.py device_id:=2
 
 .. _opencv-video-capture-support:
 
