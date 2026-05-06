@@ -1,2 +1,4 @@
 *.swp
 docs/_build/
+libusb-compat-0.1.8.tar.bz2
+libusb-compat-0.1.8/
